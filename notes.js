@@ -6,8 +6,44 @@ exports.config = {                                  //conf.js
 };
 
 ==================================================
+                                                        //beginning
+(function () {
+    function openApplicationInBrowser() {
+        browser.get("https://globalsqa.com/angularJs-protractor/BankingProject/#/manager/addCust");
+    }
+    function alertValidation(text) {
+        let EC = protractor.ExpectedConditions;
+        browser.wait(EC.alertIsPresent(), 4000, "ALert not found");
 
-describe('Protractor Demo App', function() {  //should be a astart in each test file (describe can appear under describe)
+        let alert = browser.switchTo().alert();
+        let alertText = alert.getText();
+
+        /*alertText.then(function(txt){
+            log4jsconfig.log().debug(txt);
+        })*/
+
+        //browser.sleep('2000');
+        expect(alertText).toContain(text);
+        alert.accept();
+    }
+    describe('Open URL for each spec', function () {
+        beforeEach(function () {
+            openApplicationInBrowser();
+        });
+            it('should be on correct page', function() {
+            //expect(browser.getCurrentUrl()).toContain("https://globalsqa.com/angularJs-protractor/BankingProject/#/manager/addCust");
+            expect(browser.getCurrentUrl()).toEqual("https://globalsqa.com/angularJs-protractor/BankingProject/#/manager/addCust");  //chech url
+            //browser.sleep('1000');
+            //console.log("Finished step url validation");
+        });
+
+
+
+    });
+})();
+---------------------------------------------
+
+describe('Protractor Demo App', function() {  //should be a start in each test file (describe can appear under describe)
 });                						<--- //final closer
 
 ---------------------------------------------------
@@ -25,6 +61,12 @@ afterEach(function(){
 
 --------------------------------------------------
 
+it('checks if button disabled', function () {                           //check if button is enabled = false
+        expect(element(by.id('gobutton')).isEnabled()).toBe(false); 
+});
+
+--------------------------------------------------
+
   it('should add one and two', function() {
     
     element(by.model('first')).sendKeys(1);
@@ -38,13 +80,13 @@ afterEach(function(){
 
 --------------------------------------------------
 
-  it('should be on correct page', function() {
-	expect(browser.getCurrentUrl().toContain("http://juliemr.github.io/protractor-demo"));
-	expect(browser.getCurrentUrl().toEqual("http://juliemr.github.io/protractor-demo"));  //chech url
+it('should be on correct page', function() {
+	expect(browser.getCurrentUrl()).toContain("http://juliemr.github.io/protractor-demo");
+	expect(browser.getCurrentUrl()).toEqual("http://juliemr.github.io/protractor-demo");  //chech url
 });
 
 ---------------------------------------------------
-  it('should be on correct page', function() {
+it('should be on correct page', function() {
   	
   	var textMessage = 'Test string';
 
@@ -67,7 +109,55 @@ expect(model.getText()).not.toContain('abcdef') //negative
 
 ----------------------------------------------------
 
-it('should be on correct page', function() {
+it('validate input', function() {                              // positive and negative test
+     element(by.model('first')).sendKeys('123'); 
+     let txt = element(by.model('first'));
+     element(by.model('first')).sendKeys(protractor.Key.TAB);
+     expect(txt.getAttribute('value')).toEqual('123');
+     
+     //browser.sleep('1000');
+
+     element(by.model('first')).clear();
+     element(by.model('first')).sendKeys('asd'); 
+     expect(txt.getAttribute('value')).not.toEqual('asd');
+
+     //browser.sleep('1000');
+});
+---------------------------------------------------------
+
+it('validate input', function() {
+     element(by.model('first')).clear();                            // positive
+     element(by.model('first')).sendKeys('123'); 
+     let txt = element(by.model('first'));
+     element(by.model('first')).sendKeys(protractor.Key.TAB);
+     expect(txt.getAttribute('value')).toEqual('123');
+});
+
+-----------------------------------------------------------
+
+it('validate input', function() {                              // negative 
+     element(by.model('first')).clear();
+     element(by.model('first')).sendKeys('asd');
+     let txt = element(by.model('first'));
+     element(by.model('first')).sendKeys(protractor.Key.TAB);
+     expect(txt.getAttribute('value')).not.toEqual('asd');
+      
+     //exception alert
+     let EC = protractor.ExpectedConditions;
+     browser.wait(EC.alertIsPresent(), 4000, "Alert not found");
+
+     let alert = browser.switchTo().alert();
+     let alertText = alert.getText();
+
+     //browser.sleep('2000');
+     expect(alertText).toContain("Invalid Input. Should be Numbers");
+     alert.accept();
+});
+
+-----------------------------------------------------------
+
+
+it('drop down', function() {
   	element(by.buttonText("CONTINUE")).click();
   	element(by.model("animal")).$("[value='1']").click();
 
@@ -78,7 +168,47 @@ it('should be on correct page', function() {
   	});
 
 
--------------------------------------------------
+--------------------------------------------------------------------
+            
+it('drop down', function() {                                                                //search in dropdown
+            let Customers = element(by.model("custId"));
+            let options = Customer.all(by.tagName("option"));
+
+            options.then(function(items){
+                log4jsconfig.log().debug("Dropdown options size" + items.length);
+                for(let i=0; i < items.length; i ++){
+                    items[i].getText().then(function(txt){
+                        log4jsconfig.log().debug(txt);
+                        if(txt == "Firstname1 Lastname1"){
+                            log4jsconfig.log4jsconfig().debug("Items found on the list");
+                            items[i].click();
+                        }
+                    }
+                }
+  });
+
+------------------------------------------------------------------------------------
+                                                                    //search in table
+       it('delete customer',function() {
+            element(by.buttonText('Customers')).click();
+            let rows = element.all(by.repeater('cust in Customers | orderBy:sortType:sortReverse | filter:searchCustomer'));
+            browser.sleep('10000');
+
+            rows.each(function(rows: any){
+                let cells = row.$$('td)');
+                cells.get(0).getText().then(function(txt: any){
+                    if (txt == 'Ron'){
+                        cells.get(4).$('button').click();
+                        browser.sleep('5000');
+                    }
+                }
+            }
+
+        });
+
+------------------------------------------------------------
+
+
 
 https://stackoverflow.com/questions/31744526/protractor-checking-if-input-field-has-text
 
@@ -150,3 +280,15 @@ exports.config = {
         });
     });
 })();
+
+
+-------------------------------------------------------------------------
+
+        function inputCheck(inputName, inputText) {                     //input check function
+            element(by.model(inputName)).sendKeys('inputText'); 
+            let txt = element(by.model('inputName'));
+            element(by.model('inputName')).sendKeys(protractor.Key.TAB);
+            expect(txt.getAttribute('value')).toEqual('inputText');
+        }
+
+--------------------------------------------------------------------------
